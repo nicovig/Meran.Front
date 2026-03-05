@@ -1,0 +1,274 @@
+<div class="w-full space-y-8">
+  <section
+    class="rounded-2xl border border-slate-200 bg-white p-5 shadow-md shadow-slate-100 space-y-4"
+  >
+    <header class="flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+          Applications
+        </h1>
+        <p class="mt-1 text-sm text-slate-500">
+          Crée, trie et gère tes applications SaaS.
+        </p>
+      </div>
+
+      <button
+        *ngIf="mode !== 'edit'"
+        type="button"
+        class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-sky-500 text-sm font-medium text-white shadow-md shadow-sky-200 hover:bg-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100"
+        (click)="toggleCreate()"
+      >
+        +
+      </button>
+    </header>
+  </section>
+
+  <section
+    *ngIf="showForm"
+    class="rounded-2xl border border-slate-200 bg-white p-5 shadow-md shadow-slate-100 space-y-4"
+  >
+    <form class="grid gap-4 md:grid-cols-4 items-start" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="space-y-1 md:col-span-2">
+        <label for="name" class="block text-sm font-medium text-slate-800">
+          Nom de l’application
+        </label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 shadow-inner shadow-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100"
+          placeholder="Ex : Billing, Analytics..."
+        />
+      </div>
+
+      <div class="space-y-1 md:col-span-2">
+        <label for="description" class="block text-sm font-medium text-slate-800">
+          Description
+        </label>
+        <input
+          id="description"
+          type="text"
+          formControlName="description"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 shadow-inner shadow-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100"
+          placeholder="Optionnel"
+        />
+      </div>
+
+      <div class="space-y-1 md:col-span-1">
+        <label for="format" class="block text-sm font-medium text-slate-800">
+          Format
+        </label>
+        <select
+          id="format"
+          formControlName="format"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 shadow-inner shadow-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100"
+        >
+          <option value="free">Gratuit</option>
+          <option value="oneShot">One shot</option>
+          <option value="subscription">Abonnement</option>
+        </select>
+      </div>
+
+      <div
+        class="space-y-2 md:col-span-4"
+        *ngIf="form.get('format')?.value === 'oneShot'"
+      >
+        <label for="oneShotPrice" class="block text-sm font-medium text-slate-800">
+          Prix (one shot)
+        </label>
+        <div class="relative max-w-xs">
+          <input
+            id="oneShotPrice"
+            type="number"
+            min="0"
+            step="1"
+            formControlName="oneShotPrice"
+            class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 pr-10 text-sm text-slate-900 placeholder:text-slate-400 shadow-inner shadow-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100"
+            placeholder="99"
+          />
+          <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-slate-500">
+            €
+          </span>
+        </div>
+      </div>
+
+      <div
+        class="space-y-3 md:col-span-4"
+        *ngIf="form.get('format')?.value === 'subscription'"
+      >
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-medium text-slate-800">
+            Formules d’abonnement
+          </span>
+          <button
+            type="button"
+            class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+            (click)="addPlan()"
+          >
+            + Ajouter une formule
+          </button>
+        </div>
+
+        <div
+          class="space-y-3"
+          formArrayName="plans"
+        >
+          <div
+            *ngFor="let plan of plansControls; index as i"
+            [formGroupName]="i"
+            class="grid gap-3 md:grid-cols-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-3"
+          >
+            <div class="space-y-1">
+              <label class="block text-xs font-medium text-slate-700">
+                Nom de la formule
+              </label>
+              <input
+                type="text"
+                formControlName="name"
+                class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100"
+                placeholder="Pro, Enterprise..."
+              />
+            </div>
+
+            <div class="space-y-1 md:col-span-1">
+              <label class="block text-xs font-medium text-slate-700">
+                Fréquence
+              </label>
+              <select
+                formControlName="billingPeriod"
+                class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100"
+              >
+                <option *ngFor="let option of billingPeriodOptions" [value]="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+            </div>
+
+            <div class="space-y-1">
+              <label class="block text-xs font-medium text-slate-700">
+                Prix
+              </label>
+              <div class="relative">
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  formControlName="price"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 pr-9 text-xs text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100"
+                  placeholder="49"
+                />
+                <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[11px] text-slate-500">
+                  €
+                </span>
+              </div>
+            </div>
+
+            <div class="space-y-1 md:col-span-1">
+              <label class="block text-xs font-medium text-slate-700">
+                Description
+              </label>
+              <input
+                type="text"
+                formControlName="description"
+                class="w-full rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100"
+                placeholder="Optionnel"
+              />
+            </div>
+
+            <div class="md:col-span-4 flex justify-end">
+              <button
+                type="button"
+                class="inline-flex items-center rounded-lg border border-rose-100 bg-rose-50 px-2.5 py-1 text-[11px] font-medium text-rose-700 hover:bg-rose-100"
+                (click)="removePlan(i)"
+              >
+                Supprimer la formule
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="md:col-span-4 flex justify-end pt-2">
+        <button
+          type="submit"
+          class="inline-flex items-center rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-sky-200 transition hover:bg-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+          [disabled]="form.invalid"
+        >
+          {{ editedIndex === null ? 'Ajouter l’application' : 'Mettre à jour l’application' }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section
+    *ngIf="mode === 'list'"
+    class="rounded-2xl border border-slate-200 bg-white p-5 shadow-md shadow-slate-100 space-y-4"
+  >
+    <header class="flex items-center justify-between gap-4">
+      <h2 class="text-sm font-semibold text-slate-900">
+        Liste des applications
+      </h2>
+    </header>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-left text-sm text-slate-700">
+        <thead>
+          <tr class="border-b border-slate-200 text-xs text-slate-500">
+            <th class="px-3 py-2 cursor-pointer" (click)="changeSort('name')">
+              Nom
+            </th>
+            <th class="px-3 py-2 cursor-pointer" (click)="changeSort('createdAt')">
+              Créée le
+            </th>
+            <th class="px-3 py-2 cursor-pointer" (click)="changeSort('usersCount')">
+              Utilisateurs
+            </th>
+            <th class="px-3 py-2 text-right">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let app of sortedApplications; index as i"
+            class="border-b border-slate-100 last:border-0 hover:bg-slate-50/60"
+          >
+            <td class="px-3 py-2 align-middle">
+              <div class="font-medium text-slate-900">
+                {{ app.name }}
+              </div>
+              <div class="text-xs text-slate-500" *ngIf="app.description">
+                {{ app.description }}
+              </div>
+            </td>
+            <td class="px-3 py-2 align-middle text-xs text-slate-500">
+              {{ app.createdAt | date: 'dd/MM/yyyy' }}
+            </td>
+            <td class="px-3 py-2 align-middle text-xs text-slate-500">
+              {{ app.usersCount }}
+            </td>
+            <td class="px-3 py-2 align-middle">
+              <div class="flex justify-end gap-2 text-xs">
+                <button
+                  type="button"
+                  class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:bg-slate-50"
+                  (click)="editApplication(i)"
+                >
+                  Modifier
+                </button>
+                <button
+                  type="button"
+                  class="inline-flex items-center rounded-lg border border-rose-100 bg-rose-50 px-2.5 py-1 text-[11px] font-medium text-rose-700 hover:bg-rose-100"
+                  (click)="deleteApplication(i)"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+

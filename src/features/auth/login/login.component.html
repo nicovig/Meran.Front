@@ -1,0 +1,51 @@
+<div class="w-full max-w-md mx-auto">
+  <div
+    class="bg-white/95 border border-slate-200 rounded-2xl shadow-lg shadow-sky-100 p-8"
+  >
+    <div class="mb-6 text-center">
+      <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Connexion</h1>
+      <p class="mt-1 text-sm text-slate-500">
+        Accède à la console de gestion de tes SaaS.
+      </p>
+    </div>
+
+    <form class="space-y-5" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="space-y-2">
+        <label for="email" class="block text-sm font-medium text-slate-800">
+          Email
+        </label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 shadow-inner shadow-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100"
+          placeholder="you@example.com"
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="space-y-2">
+        <label for="password" class="block text-sm font-medium text-slate-800">
+          Mot de passe
+        </label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 shadow-inner shadow-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100"
+          placeholder="••••••••"
+          autocomplete="current-password"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="inline-flex w-full items-center justify-center rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-sky-200 transition hover:bg-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+        [disabled]="form.invalid"
+      >
+        Se connecter
+      </button>
+    </form>
+  </div>
+</div>
+
