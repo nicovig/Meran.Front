@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DataService } from '../../core/data.service';
 
 type ApplicationFormat = 'free' | 'oneShot' | 'subscription';
 
@@ -35,6 +36,7 @@ export class ApplicationsComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly data = inject(DataService);
 
   showForm = false;
 
@@ -340,6 +342,10 @@ export class ApplicationsComponent implements OnInit {
       this.showForm = false;
       void this.router.navigate(['applications']);
     }
+  }
+
+  hasUsers(app: ApplicationItem): boolean {
+    return this.data.getUsersSnapshot().some((u) => u.applicationId === app.id);
   }
 }
 

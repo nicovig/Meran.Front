@@ -20,39 +20,7 @@
     </header>
   </section>
 
-  <section
-    *ngIf="!currentApplication"
-    class="rounded-2xl border border-slate-200 bg-white p-5 shadow-md shadow-slate-100"
-  >
-    <div class="grid gap-4 md:grid-cols-2">
-      <article
-        *ngFor="let app of applications"
-        class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 shadow-sm shadow-slate-100 flex flex-col gap-3"
-      >
-        <div>
-          <h2 class="text-sm font-semibold text-slate-900">
-            {{ app.name }}
-          </h2>
-          <p class="mt-1 text-xs text-slate-500">
-            {{ app.description }}
-          </p>
-          <p class="mt-2 text-[11px] text-slate-400">
-            GUID :
-            <span class="font-mono">{{ app.id }}</span>
-          </p>
-        </div>
-
-        <div class="mt-auto flex justify-end">
-          <a
-            [routerLink]="['/utilisateurs', 'applications', app.id]"
-            class="inline-flex items-center rounded-xl bg-sky-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm shadow-sky-200 hover:bg-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-100"
-          >
-            Voir les utilisateurs
-          </a>
-        </div>
-      </article>
-    </div>
-  </section>
+  <!-- Sélection d’application déplacée dans la navbar, plus besoin ici -->
 
   <section
     *ngIf="currentApplication"
@@ -171,9 +139,15 @@
             <th class="px-3 py-2">Nom</th>
             <th class="px-3 py-2">Email</th>
             <th class="px-3 py-2">Origine</th>
-            <th class="px-3 py-2">Formule</th>
+            <th
+              class="px-3 py-2"
+              *ngIf="availablePlans.length > 0"
+            >
+              Formule
+            </th>
             <th class="px-3 py-2">Créé le</th>
             <th class="px-3 py-2">GUID</th>
+            <th class="px-3 py-2">Statut</th>
           </tr>
         </thead>
         <tbody>
@@ -190,7 +164,10 @@
             <td class="px-3 py-2 align-middle text-xs text-slate-600">
               {{ user.origin === 'admin' ? 'Créé par admin' : 'Auto-inscription' }}
             </td>
-            <td class="px-3 py-2 align-middle text-xs text-slate-600">
+            <td
+              class="px-3 py-2 align-middle text-xs text-slate-600"
+              *ngIf="availablePlans.length > 0"
+            >
               {{ user.plan ?? '—' }}
             </td>
             <td class="px-3 py-2 align-middle text-xs text-slate-600">
@@ -199,6 +176,21 @@
             <td class="px-3 py-2 align-middle text-[11px] text-slate-500 font-mono">
               {{ user.id }}
             </td>
+            <td class="px-3 py-2 align-middle text-xs text-slate-600">
+              <button
+                type="button"
+                class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition hover:cursor-pointer"
+                [ngClass]="
+                  user.active
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                    : 'bg-slate-100 border-slate-200 text-slate-500'
+                "
+                (click)="toggleActive(user)"
+              >
+                {{ user.active ? 'Actif' : 'Désactivé' }}
+              </button>
+            </td>
+
           </tr>
         </tbody>
       </table>

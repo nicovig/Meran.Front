@@ -17,6 +17,7 @@ interface UserItem {
   origin: 'admin' | 'self';
   createdAt: Date;
   plan: string | null;
+  active: boolean;
 }
 
 @Component({
@@ -54,6 +55,7 @@ export class UsersComponent {
         origin: 'admin',
         createdAt: new Date('2025-03-15'),
         plan: 'Standard',
+        active: true,
       },
       {
         id: '9c1a7e4b-2d8f-4c6a-9b0e-1f2a3b4c5d6e',
@@ -62,6 +64,7 @@ export class UsersComponent {
         origin: 'self',
         createdAt: new Date('2025-04-02'),
         plan: 'Standard',
+        active: true,
       },
     ],
     '5c8f6b9e-2c13-4e7a-b1de-1a9f4c2c8a12': [
@@ -72,6 +75,7 @@ export class UsersComponent {
         origin: 'admin',
         createdAt: new Date('2025-05-01'),
         plan: 'Free',
+        active: true,
       },
       {
         id: '0f1e2d3c-4b5a-6978-90ab-cdef12345678',
@@ -80,6 +84,7 @@ export class UsersComponent {
         origin: 'self',
         createdAt: new Date('2025-05-10'),
         plan: 'Plus',
+        active: true,
       },
     ],
   };
@@ -87,7 +92,7 @@ export class UsersComponent {
   form = this.fb.group({
     name: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
-    plan: ['', [Validators.required]],
+    plan: [''],
   });
 
   search = new FormControl('', { nonNullable: true });
@@ -170,12 +175,24 @@ export class UsersComponent {
         email: value.email ?? '',
         origin: 'admin',
         createdAt: new Date(),
-        plan: value.plan ?? null,
+        plan: value.plan && this.availablePlans.length > 0 ? value.plan : null,
+        active: true,
       },
     ];
 
     this.showForm = false;
     this.form.reset();
+  }
+
+  toggleActive(user: UserItem): void {
+    const appId = this.currentApplicationId;
+    if (!appId) {
+      return;
+    }
+    const list = this.usersByApplication[appId] ?? [];
+    this.usersByApplication[appId] = list.map((u) =>
+      u.id === user.id ? { ...u, active: !u.active } : u,
+    );
   }
 }
 
