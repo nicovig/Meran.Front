@@ -14,7 +14,7 @@ export class LayoutComponent {
   private readonly data = inject(DataService);
 
   showUsersMenu = false;
-  readonly applications = this.data.getApplicationsSnapshot();
+  readonly applications$ = this.data.applications$;
 
   toggleUsersMenu(): void {
     this.showUsersMenu = !this.showUsersMenu;

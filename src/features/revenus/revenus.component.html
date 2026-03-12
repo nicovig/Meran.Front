@@ -1,4 +1,36 @@
 <div class="w-full space-y-8">
+  @if (vm$ | async; as vm) {
+  @if (vm.status === 'loading') {
+    <section
+      class="rounded-2xl border border-slate-200 bg-white p-5 shadow-md shadow-slate-100 space-y-4"
+    >
+      <header class="flex items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+            Revenus
+          </h1>
+          <p class="mt-1 text-sm text-slate-500">
+            Chargement des données de paiements...
+          </p>
+        </div>
+      </header>
+    </section>
+  } @else if (vm.status === 'error') {
+    <section
+      class="rounded-2xl border border-rose-100 bg-rose-50 p-5 shadow-md shadow-rose-100 space-y-4"
+    >
+      <header class="flex items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+            Revenus
+          </h1>
+          <p class="mt-1 text-sm text-rose-600">
+            {{ vm.message || 'Impossible de charger les données de revenus.' }}
+          </p>
+        </div>
+      </header>
+    </section>
+  } @else {
   <section
     class="rounded-2xl border border-slate-200 bg-white p-5 shadow-md shadow-slate-100 space-y-4"
   >
@@ -8,7 +40,7 @@
           Revenus
         </h1>
         <p class="mt-1 text-sm text-slate-500">
-          Vue d’ensemble de tes revenus mensuels et annuels (placeholder, en attente du back).
+          Vue d’ensemble basée sur les paiements enregistrés.
         </p>
       </div>
     </header>
@@ -20,40 +52,55 @@
     <div class="grid gap-4 md:grid-cols-3 text-sm text-slate-700">
       <div class="rounded-2xl border border-slate-200 bg-sky-50/60 p-4">
         <p class="text-xs font-medium uppercase tracking-wide text-slate-500">
-          MRR total
+          Total des paiements passés
         </p>
         <p class="mt-2 text-xl font-semibold text-slate-900">
-          4 250 €
+          {{ vm.totalPastAmount | number: '1.0-0' }}
+          {{ vm.currency || '€' }}
         </p>
-        <p class="mt-1 text-xs text-emerald-500">
-          +8.3 % vs mois dernier
+        <p class="mt-1 text-xs text-slate-500">
+          Somme de tous les paiements enregistrés.
         </p>
       </div>
 
       <div class="rounded-2xl border border-slate-200 bg-sky-50/60 p-4">
         <p class="text-xs font-medium uppercase tracking-wide text-slate-500">
-          ARR estimé
+          Paiements à venir
         </p>
         <p class="mt-2 text-xl font-semibold text-slate-900">
-          51 000 €
+          {{ vm.upcomingCount }}
         </p>
         <p class="mt-1 text-xs text-slate-500">
-          Sur la base du MRR actuel.
+          Nombre de paiements prévus dans le futur.
         </p>
       </div>
 
       <div class="rounded-2xl border border-slate-200 bg-sky-50/60 p-4">
         <p class="text-xs font-medium uppercase tracking-wide text-slate-500">
-          Churn estimé
+          Prochain paiement
         </p>
-        <p class="mt-2 text-xl font-semibold text-slate-900">
-          2.1 %
-        </p>
-        <p class="mt-1 text-xs text-slate-500">
-          Valeurs mockées pour l’instant.
-        </p>
+        @if (vm.nextPayment) {
+          <p class="mt-2 text-xl font-semibold text-slate-900">
+            {{ vm.nextPayment.expectedAmount || 0 | number: '1.0-0' }}
+            {{ vm.currency || vm.nextPayment.currency || '€' }}
+          </p>
+          <p class="mt-1 text-xs text-slate-500">
+            Prévu le
+            {{ vm.nextPayment.nextPaymentDueAt | date: 'dd/MM/yyyy' }} (plan
+            {{ vm.nextPayment.plan || 'inconnu' }}).
+          </p>
+        } @else {
+          <p class="mt-2 text-xl font-semibold text-slate-900">
+            —
+          </p>
+          <p class="mt-1 text-xs text-slate-500">
+            Aucun paiement à venir enregistré.
+          </p>
+        }
       </div>
     </div>
   </section>
+  }
+  }
 </div>
 

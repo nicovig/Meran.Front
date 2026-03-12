@@ -1,22 +1,12 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { DataService } from '../../core/data.service';
+import { Application, DataService, User } from '../../core/data.service';
+import { ApiService } from '../../core/api.service';
+import type { AddApplicationUserRequestDto } from '../../models/models';
 
-interface ApplicationSummary {
-  id: string;
-  name: string;
-  description: string;
-}
-
-interface UserItem {
-  id: string;
-  name: string;
-  email: string;
-  origin: 'admin' | 'self';
-  createdAt: Date;
-  plan: string | null;
+interface UserItem extends User {
   active: boolean;
 }
 
@@ -26,68 +16,17 @@ interface UserItem {
   imports: [CommonModule, RouterLink, ReactiveFormsModule],
   templateUrl: 'users.component.html',
 })
-export class UsersComponent {
+export class UsersComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
   private readonly data = inject(DataService);
+  private readonly api = inject(ApiService);
 
   showForm = false;
 
-  applications: ApplicationSummary[] = [
-    {
-      id: 'b97ae84a-4a54-4cfe-a4bb-2a9346164731',
-      name: 'Meran Core',
-      description: 'Console centrale pour gérer l’ensemble des SaaS.',
-    },
-    {
-      id: '5c8f6b9e-2c13-4e7a-b1de-1a9f4c2c8a12',
-      name: 'Analytics',
-      description: 'Dashboards et KPIs pour suivre l’usage.',
-    },
-  ];
+  applications: Application[] = [];
 
-  usersByApplication: Record<string, UserItem[]> = {
-    'b97ae84a-4a54-4cfe-a4bb-2a9346164731': [
-      {
-        id: 'f4b2c8e1-9a6d-4b1d-8c34-56a7e9f01234',
-        name: 'Jean Dupont',
-        email: 'jean.dupont@example.com',
-        origin: 'admin',
-        createdAt: new Date('2025-03-15'),
-        plan: 'Standard',
-        active: true,
-      },
-      {
-        id: '9c1a7e4b-2d8f-4c6a-9b0e-1f2a3b4c5d6e',
-        name: 'Marie Martin',
-        email: 'marie.martin@example.com',
-        origin: 'self',
-        createdAt: new Date('2025-04-02'),
-        plan: 'Standard',
-        active: true,
-      },
-    ],
-    '5c8f6b9e-2c13-4e7a-b1de-1a9f4c2c8a12': [
-      {
-        id: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d',
-        name: 'Alice Durand',
-        email: 'alice.durand@example.com',
-        origin: 'admin',
-        createdAt: new Date('2025-05-01'),
-        plan: 'Free',
-        active: true,
-      },
-      {
-        id: '0f1e2d3c-4b5a-6978-90ab-cdef12345678',
-        name: 'Bob Leroy',
-        email: 'bob.leroy@example.com',
-        origin: 'self',
-        createdAt: new Date('2025-05-10'),
-        plan: 'Plus',
-        active: true,
-      },
-    ],
-  };
+  usersByApplication: Record<string, UserItem[]> = {};
 
   form = this.fb.group({
     name: ['', [Validators.required]],
@@ -97,16 +36,24 @@ export class UsersComponent {
 
   search = new FormControl('', { nonNullable: true });
 
+  ngOnInit(): void {
+    this.refreshFromStore();
+
+    this.route.paramMap.subscribe(() => {
+      this.refreshFromStore();
+    });
+  }
+
   get currentApplicationId(): string | null {
     return this.route.snapshot.paramMap.get('id');
   }
 
-  get currentApplication(): ApplicationSummary | null {
+  get currentApplication(): Application | null {
     const id = this.currentApplicationId;
     if (!id) {
       return null;
     }
-    return this.applications.find((app) => app.id === id) ?? null;
+    return this.data.getApplicationsSnapshot().find((app) => app.id === id) ?? null;
   }
 
   get currentUsers(): UserItem[] {
@@ -163,25 +110,15 @@ export class UsersComponent {
     }
 
     const value = this.form.value;
-    const current = this.usersByApplication[this.currentApplicationId] ?? [];
+    const body: AddApplicationUserRequestDto = {
+      name: value.name ?? null,
+      email: value.email ?? null,
+      plan: value.plan && this.availablePlans.length > 0 ? value.plan : null,
+    };
 
-    const id = `user-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-
-    this.usersByApplication[this.currentApplicationId] = [
-      ...current,
-      {
-        id,
-        name: value.name ?? '',
-        email: value.email ?? '',
-        origin: 'admin',
-        createdAt: new Date(),
-        plan: value.plan && this.availablePlans.length > 0 ? value.plan : null,
-        active: true,
-      },
-    ];
-
-    this.showForm = false;
-    this.form.reset();
+    this.api.addApplicationUser(this.currentApplicationId, body).subscribe({
+      next: () => this.afterMutation(),
+    });
   }
 
   toggleActive(user: UserItem): void {
@@ -193,6 +130,34 @@ export class UsersComponent {
     this.usersByApplication[appId] = list.map((u) =>
       u.id === user.id ? { ...u, active: !u.active } : u,
     );
+  }
+
+  private refreshFromStore(): void {
+    const apps = this.data.getApplicationsSnapshot();
+    const users = this.data.getUsersSnapshot();
+
+    this.applications = apps;
+
+    const grouped: Record<string, UserItem[]> = {};
+
+    users.forEach((user) => {
+      const list = grouped[user.applicationId] ?? [];
+      list.push({ ...user, active: true });
+      grouped[user.applicationId] = list;
+    });
+
+    this.usersByApplication = grouped;
+  }
+
+  private afterMutation(): void {
+    this.api.getApplications().subscribe({
+      next: (apps) => {
+        this.data.setFromDtos(apps);
+        this.refreshFromStore();
+        this.showForm = false;
+        this.form.reset();
+      },
+    });
   }
 }
 

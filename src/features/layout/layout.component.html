@@ -47,10 +47,10 @@
               Applications
             </p>
             <button
-              *ngFor="let app of applications"
+              *ngFor="let app of applications$ | async"
               type="button"
               class="flex w-full items-start gap-2 px-3 py-1.5 text-left text-[11px] text-slate-700 hover:bg-sky-50"
-              [routerLink]="['/utilisateurs', 'applications', app.id]"
+              [routerLink]="['/users', 'applications', app.id]"
               routerLinkActive="bg-sky-50 text-sky-700"
               (click)="showUsersMenu = false"
             >

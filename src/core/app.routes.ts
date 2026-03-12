@@ -54,7 +54,7 @@ export const routes: Routes = [
           import('../features/revenus/revenus.component').then((m) => m.RevenusComponent),
       },
       {
-        path: 'utilisateurs',
+        path: 'users',
         children: [
           {
             path: '',
